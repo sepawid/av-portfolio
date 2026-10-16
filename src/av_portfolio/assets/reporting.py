@@ -19,7 +19,12 @@ def export_parquet(context: AssetExecutionContext, evaluate_metrics: pl.DataFram
 
 @asset
 def duckdb_bridge(context: AssetExecutionContext, export_parquet: str) -> None:
-    """Ładuje Parquet i eksportuje widok agregujący do SQLite dla Redash."""
+    """Ładuje Parquet i eksportuje zagregowany raport KPI do SQLite dla Redash.
+
+    Raport zawiera wiersze per pogoda oraz wiersz zbiorczy (weather IS NULL,
+    label 'ALL') wyliczony przez GROUPING SETS, wraz z metrykami pochodnymi
+    precision/recall/f1.
+    """
     import duckdb
 
     SQLITE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -27,17 +32,42 @@ def duckdb_bridge(context: AssetExecutionContext, export_parquet: str) -> None:
     conn = duckdb.connect()
     conn.execute("INSTALL sqlite; LOAD sqlite;")
 
-    # Zapytanie agregujące
+    # Agregacja per pogoda + wiersz zbiorczy; wartości NULL-safe (NULLIF).
     agg_query = f"""
         SELECT
+            CASE
+                WHEN weather IS NULL THEN 'ALL'
+                WHEN weather = 0 THEN 'SUNNY'
+                WHEN weather = 1 THEN 'RAIN'
+                WHEN weather = 2 THEN 'FOG'
+                ELSE 'UNKNOWN'
+            END AS weather_label,
             weather,
-            COUNT(*) as total_frames,
-            SUM(is_true_positive) as tp,
-            SUM(is_false_positive) as fp,
-            SUM(is_false_negative) as fn,
-            SUM(is_critical_failure) as critical_failures
+            COUNT(*) AS total_frames,
+            SUM(is_true_positive) AS tp,
+            SUM(is_true_negative) AS tn,
+            SUM(is_false_positive) AS fp,
+            SUM(is_false_negative) AS fn,
+            SUM(is_critical_failure) AS critical_failures,
+            ROUND(
+                SUM(is_true_positive) / NULLIF(SUM(is_true_positive) + SUM(is_false_positive), 0),
+                4
+            ) AS precision,
+            ROUND(
+                SUM(is_true_positive) / NULLIF(SUM(is_true_positive) + SUM(is_false_negative), 0),
+                4
+            ) AS recall,
+            ROUND(
+                2 * SUM(is_true_positive)
+                / NULLIF(
+                    2 * SUM(is_true_positive) + SUM(is_false_positive) + SUM(is_false_negative),
+                    0
+                ),
+                4
+            ) AS f1
         FROM read_parquet('{export_parquet}')
-        GROUP BY weather
+        GROUP BY GROUPING SETS ((weather), ())
+        ORDER BY weather NULLS LAST
     """
 
     # Eksport do SQLite

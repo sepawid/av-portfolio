@@ -18,20 +18,34 @@ def _one_row(actual: int, predicted: int, confidence: float, weather: int = 0) -
 
 
 @pytest.mark.parametrize(
-    ("actual", "predicted", "confidence", "weather", "tp", "fp", "fn", "critical"),
+    ("actual", "predicted", "confidence", "weather", "tp", "tn", "fp", "fn", "critical"),
     [
         # Klasy: NONE=0, STOP=1, YIELD=2, SPEED_LIMIT=3; pogoda: SUNNY=0, RAIN=1, FOG=2
-        (1, 1, 0.9, 0, 1, 0, 0, 0),  # trafiony STOP
-        (1, 1, 0.8, 0, 1, 0, 0, 0),  # trafiony STOP (pewność powyżej progu)
-        (1, 1, 0.7, 0, 0, 0, 0, 0),  # próg jest ostry: confidence > 0.7
-        (1, 0, 0.9, 0, 0, 0, 1, 0),  # przeoczony STOP, dobra pogoda
-        (1, 0, 0.9, 2, 0, 0, 1, 1),  # przeoczony STOP we mgle -> critical
-        (2, 0, 0.9, 1, 0, 0, 1, 1),  # przeoczony YIELD w deszczu -> critical
-        (3, 0, 0.9, 2, 0, 0, 1, 0),  # przeoczony SPEED_LIMIT we mgle -> nie-critical
-        (0, 3, 0.9, 0, 0, 1, 0, 0),  # predykcja znaku, którego nie ma -> FP
-        (1, 3, 0.9, 0, 0, 1, 1, 0),  # błędna klasyfikacja: FP + FN
-        (1, 3, 0.9, 2, 0, 1, 1, 1),  # błędna klasyfikacja STOP we mgle -> critical
-        (0, 0, 0.9, 0, 1, 0, 0, 0),  # LEGACY: brak znaku i brak predykcji liczone jako TP
+        # Predykcje z confidence >= 0.7 są "efektywne", poniżej progu odrzucane.
+        (1, 1, 0.9, 0, 1, 0, 0, 0, 0),  # trafiony STOP
+        (1, 1, 0.7, 0, 1, 0, 0, 0, 0),  # próg włącznie: confidence >= 0.7
+        (1, 1, 0.69, 0, 0, 0, 0, 1, 0),  # poprawna predykcja, ale poniżej progu -> przeoczenie (FN)
+        (1, 0, 0.9, 0, 0, 0, 0, 1, 0),  # przeoczony STOP, dobra pogoda
+        (1, 0, 0.9, 2, 0, 0, 0, 1, 1),  # przeoczony STOP we mgle -> critical
+        (2, 0, 0.5, 1, 0, 0, 0, 1, 1),  # przeoczony YIELD w deszczu -> critical
+        (3, 0, 0.9, 2, 0, 0, 0, 1, 0),  # przeoczony SPEED_LIMIT we mgle -> nie-critical
+        (0, 3, 0.9, 0, 0, 0, 1, 0, 0),  # predykcja znaku, którego nie ma -> FP
+        (0, 3, 0.5, 0, 0, 1, 0, 0, 0),  # phantom odrzucony przez próg -> poprawna cisza (TN)
+        (0, 0, 0.9, 0, 0, 1, 0, 0, 0),  # brak znaku i brak predykcji -> TN (nie TP!)
+        (0, 0, 0.3, 2, 0, 1, 0, 0, 0),  # cisza we mgle -> TN
+        (1, 3, 0.9, 0, 0, 0, 1, 1, 0),  # błędna klasyfikacja: FP + FN
+        (1, 3, 0.9, 2, 0, 0, 1, 1, 1),  # błędna klasyfikacja STOP we mgle -> critical
+        (
+            1,
+            1,
+            0.3,
+            2,
+            0,
+            0,
+            0,
+            1,
+            1,
+        ),  # STOP potwierdzony, ale z niską pewnością we mgle -> critical
     ],
 )
 def test_compute_kpi_flags(
@@ -40,6 +54,7 @@ def test_compute_kpi_flags(
     confidence: float,
     weather: int,
     tp: int,
+    tn: int,
     fp: int,
     fn: int,
     critical: int,
@@ -47,6 +62,7 @@ def test_compute_kpi_flags(
     out = compute_kpi_flags(_one_row(actual, predicted, confidence, weather))
 
     assert out["is_true_positive"].item() == tp
+    assert out["is_true_negative"].item() == tn
     assert out["is_false_positive"].item() == fp
     assert out["is_false_negative"].item() == fn
     assert out["is_critical_failure"].item() == critical
@@ -58,6 +74,7 @@ def test_compute_kpi_flags_preserves_input_columns() -> None:
 
     flag_columns = {
         "is_true_positive",
+        "is_true_negative",
         "is_false_positive",
         "is_false_negative",
         "is_critical_failure",

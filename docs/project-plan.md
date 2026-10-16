@@ -33,15 +33,14 @@ Pokazać produkcyjny wzorzec przetwarzania danych dla wizji komputerowej w AV:
 - [x] Testy jednostkowe: flagi KPI (tabela przypadków), schemat Pandery, roundtrip Protobuf
 - [x] Dokumentacja: `kpi-definition.md`, `runbook.md`, `project-plan.md` (ten plik)
 
-### Faza 4 — Poprawa semantyki KPI 🔄 (w toku)
+### Faza 4 — Poprawa semantyki KPI ✅ (zakończona)
 
-Zakres na podstawie listy ograniczeń z `kpi-definition.md`:
-
-- [ ] Spójny próg `confidence` dla TP/FP/FN („efektywna predykcja")
-- [ ] Wyeliminowanie fałszywych TP dla pary NONE/NONE; dodanie flagi `is_true_negative`
-- [ ] Enumy z `.proto` (lub udokumentowany mirror) zamiast magicznych liczb
-- [ ] Rozszerzenie raportu SQLite: `precision`, `recall`, `f1` + wiersz zbiorczy (ALL)
-- [ ] Regeneracja danych wyjściowych i aktualizacja testów
+- [x] Spójny próg `confidence` dla TP/FP/FN („efektywna predykcja", `CONFIDENCE_THRESHOLD = 0.7`)
+- [x] Wyeliminowanie fałszywych TP dla pary NONE/NONE; dodanie flagi `is_true_negative`
+- [x] Moduł `domain.py` z enumami + test synchronizacji z `.proto`
+- [x] Rozszerzenie raportu SQLite: `precision`, `recall`, `f1` + wiersz zbiorczy (ALL)
+- [x] Generator danych: seed (determinizm) + kalibracja confidence (trafienia pewniejsze niż błędy)
+- [x] Regeneracja danych wyjściowych i aktualizacja testów; automatyzacja setupu Redash (`scripts/redash_setup.sh`)
 
 ### Faza 5 — Prezentacja i portfolio ⏳ (planowana)
 

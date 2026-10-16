@@ -18,6 +18,8 @@ Ten dokument wyjaśnia, gdzie dokładnie znajdują się procesy wspomniane w prz
 ## 2. Inżynieria Danych i Pipeline (Dagster & Polars)
 Wszystkie procesy przetwarzania znajdują się w katalogu `src/av_portfolio/assets/`.
 
+*   **Enumy domenowe**: [domain.py](file:///home/sebastian/repos/automotive_kpis/av-portfolio/src/av_portfolio/domain.py)
+    *   *Co tu jest?* `IntEnum` dla klas znaków i pogody; spójność z `traffic_signs.proto` wymusza test `tests/test_domain.py`.
 *   **Ingest (Protobuf -> Polars)**: [ingestion.py](file:///home/sebastian/repos/automotive_kpis/av-portfolio/src/av_portfolio/assets/ingestion.py)
     *   *Kluczowy proces:* Funkcja `ingest_logs`. Czyta plik `data/raw/detections.pb` i parsuje go do DataFrame.
 *   **Walidacja (Pandera)**: [metrics.py](file:///home/sebastian/repos/automotive_kpis/av-portfolio/src/av_portfolio/assets/metrics.py) oraz [schemas.py](file:///home/sebastian/repos/automotive_kpis/av-portfolio/src/av_portfolio/models/schemas.py)
@@ -38,6 +40,8 @@ Wszystkie procesy przetwarzania znajdują się w katalogu `src/av_portfolio/asse
     *   *Co tu jest?* Ustawienia dla Ruff (linting) i Mypy (strict typing).
 *   **Automatyzacja Kontroli**: [scripts/lint.sh](file:///home/sebastian/repos/automotive_kpis/av-portfolio/scripts/lint.sh)
     *   *Co tu jest?* Skrypt wywołujący `ruff` i `mypy` po kolei.
+*   **Testy jednostkowe**: `tests/`
+    *   *Co tu jest?* Flag KPI (tabela przypadków TP/TN/FP/FN/critical), walidacja schematu Pandery, roundtrip Protobuf, spójność enumów z `.proto`.
 
 ## 5. Dane (Filesystem)
 *   `data/raw/detections.pb`: Surowe dane binarne (5M rekordów).

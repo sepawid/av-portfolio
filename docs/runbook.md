@@ -78,17 +78,25 @@ print(duckdb.sql(\"SELECT * FROM 'data/outputs/redash_db.sqlite'.kpi_report\").d
 
 ```bash
 docker-compose up -d
-docker-compose run --rm server create_db   # jednorazowa inicjalizacja bazy Redasha
 ```
 
-1. Otwórz [http://localhost:5000](http://localhost:5000) i utwórz konto admina.
-2. **Settings → Data Sources → New Data Source**:
+### Automatyzacja (zalecane)
+
+```bash
+./scripts/redash_setup.sh   # inicjalizacja bazy + rejestracja datasource SQLite
+```
+
+### Kroki manualne (alternatywa)
+
+1. `docker-compose run --rm server create_db` — jednorazowa inicjalizacja bazy Redasha.
+2. Otwórz [http://localhost:5000](http://localhost:5000) i utwórz konto admina.
+3. **Settings → Data Sources → New Data Source**:
    - Type: `SQLite`
-   - Path: `/data/redash_db.sqlite` (katalog `data/outputs` jest zamontowany jako `/data` w kontenerach)
-3. Przykładowe zapytanie:
+   - Database Path: `/data/redash_db.sqlite` (katalog `data/outputs` jest zamontowany jako `/data` w kontenerach)
+4. Przykładowe zapytanie:
 
 ```sql
-SELECT * FROM kpi_report ORDER BY weather;
+SELECT * FROM kpi_report ORDER BY weather NULLS LAST;
 ```
 
 Po zmianie danych wystarczy odświeżyć zapytanie — plik SQLite jest nadpisywany przez asset `duckdb_bridge`.

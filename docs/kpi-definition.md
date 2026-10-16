@@ -2,6 +2,8 @@
 
 Dokument opisuje, jak pipeline liczy flagi KPI. Implementacja: `src/av_portfolio/assets/metrics.py` (funkcja `compute_kpi_flags`).
 
+Enumy klas i pogody: `src/av_portfolio/domain.py` — synchronizacja z `traffic_signs.proto` pilnowana testem `tests/test_domain.py`.
+
 ## Dane wejściowe
 
 Pojedynczy wiersz = jedna detekcja w klatce (frame):
@@ -29,55 +31,71 @@ Pojedynczy wiersz = jedna detekcja w klatce (frame):
 
 - `0` SUNNY, `1` RAIN, `2` FOG
 
-## Flagi KPI (aktualna implementacja)
+## Efektywna predykcja (próg confidence)
+
+Model uznajemy za „widzący" znak tylko wtedy, gdy `confidence >= CONFIDENCE_THRESHOLD` (domyślnie `0.7`, stała w `metrics.py`). Predykcja z niższą pewnością jest odrzucana i traktowana jak brak detekcji (`NONE`):
+
+```
+effective = predicted_class   jeśli confidence >= 0.7
+effective = NONE              w przeciwnym przypadku
+```
+
+## Flagi KPI
 
 ### is_true_positive (TP)
 
 ```
-predicted_class == actual_class AND confidence > 0.7
+actual != NONE AND effective == actual
 ```
 
-Próg pewności jest **ostry** — przy `confidence == 0.7` flaga się NIE zapala.
+### is_true_negative (TN)
+
+```
+actual == NONE AND effective == NONE
+```
+
+Poprawna cisza: model nic nie wykrył tam, gdzie nic nie było.
 
 ### is_false_positive (FP)
 
 ```
-predicted_class != actual_class AND predicted_class != NONE
+effective != NONE AND effective != actual
 ```
 
-Predykcja znaku, którego nie ma, albo błędna klasa znaku.
+Phantom detection (znak przewidziany bez podstawy) albo błędna klasa znaku.
 
 ### is_false_negative (FN)
 
 ```
-predicted_class != actual_class AND actual_class != NONE
+actual != NONE AND effective != actual
 ```
 
-Przeoczenie istniejącego znaku (brak predykcji lub błędna klasa).
-
-Uwaga: błędna klasyfikacja znaku (`actual != NONE`, `predicted != NONE`, klasy różne) zapala **jednocześnie FP i FN** — to świadoma konwencja tego prostego modelu flagowego.
+Przeoczenie znaku — brak predykcji, błędna klasa **lub** pewność poniżej progu.
 
 ### is_critical_failure
 
 ```
-actual_class IN {STOP, YIELD} AND predicted_class != actual_class AND weather != SUNNY
+actual IN {STOP, YIELD} AND effective != actual AND weather != SUNNY
 ```
 
-Najgroźniejsza klasa błędu: przeoczenie STOP/YIELD w deszczu lub mgle.
+Najgroźniejsza klasa błędu: efektywne przeoczenie STOP/YIELD w deszczu lub mgle.
+
+### Uwagi projektowe
+
+- Błędna klasyfikacja znaku (`actual` i `effective` to różne klasy nie-NONE) zapala **jednocześnie FP i FN** — świadoma konwencja prostego modelu flagowego (nie jest to macierz pomyłek).
+- Predykcja poprawna klasowo, ale z pewnością poniżej progu, liczy się jako FN (model „nie podjął decyzji") — dlatego próg confidence należy traktować jako część definicji modelu.
+- Ten sam próg obowiązuje TP, FP, FN i critical failures (spójność).
 
 ## Agregacja i raportowanie
 
-`duckdb_bridge` (`src/av_portfolio/assets/reporting.py`) agreguje dane per pogoda:
+`duckdb_bridge` (`src/av_portfolio/assets/reporting.py`) buduje tabelę `kpi_report` w `data/outputs/redash_db.sqlite` (Redash):
 
-- `total_frames`, `tp`, `fp`, `fn`, `critical_failures`
-
-i zapisuje wynik do tabeli `kpi_report` w `data/outputs/redash_db.sqlite` (Redash).
-
-## Znane ograniczenia (do naprawy w kolejnym kroku)
-
-Zidentyfikowane na etapie porządkowania repo — plan naprawy: etap C (`docs/project-plan.md`):
-
-1. **TP bez warunku `actual_class != NONE`** — przypadek „brak znaku i brak predykcji" (NONE/NONE) obecnie zapala flagę TP, sztucznie zawyżając wynik. Przy rozkładzie danych, gdzie ~50% to NONE, to poważne zniekształcenie.
-2. **Próg confidence stosowany tylko w TP** — FP i FN ignorują pewność predykcji, więc predykcja z `confidence = 0.05` liczy się tak samo jak z `0.99`.
-3. **Magiczne liczby** — `[1, 2]`, `0`, `0.7` zakodowane wprost w wyrażeniach, zamiast odwołania do enumów z `traffic_signs.proto`.
-4. **Brak metryk pochodnych w raporcie** — SQLite zawiera tylko surowe liczniki (tp/fp/fn), bez `precision`/`recall`/`f1`.
+| Kolumna | Opis |
+|---|---|
+| `weather_label`, `weather` | SUNNY / RAIN / FOG oraz wiersz zbiorczy `ALL` (`weather IS NULL`, z GROUPING SETS) |
+| `total_frames` | liczba klatek w segmencie |
+| `tp`, `tn`, `fp`, `fn` | sumy flag |
+| `critical_failures` | suma `is_critical_failure` |
+| `precision` | `tp / (tp + fp)` (NULL-safe) |
+| `recall` | `tp / (tp + fn)` (NULL-safe) |
+| `f1` | `2*tp / (2*tp + fp + fn)` (NULL-safe) |
