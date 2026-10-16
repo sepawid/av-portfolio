@@ -10,6 +10,12 @@ A high-performance, asset-driven data pipeline designed for evaluating **Autonom
 
 📊 **[Live report](https://sepawid.github.io/av-portfolio/)** (GitHub Pages) — headline KPIs, analysis figures and the full notebook as HTML.
 
+## ⚡ Demo
+
+![Demo: data generation + full KPI pipeline](docs/figures/demo.gif)
+
+_`uv run python generator.py && uv run python demo_run.py` — 5M synthetic frames, ~11 s wall time, 3/3 quality checks passed and a SQLite report ready for BI._
+
 ## 🚀 The Architecture
 
 This pipeline is built for speed and reliability, moving away from legacy Pandas-based workflows towards a vectorized, binary-first architecture.
@@ -129,7 +135,7 @@ uv run python generator.py
 ### 4. Run the Pipeline
 ```bash
 # One-shot headless run (recommended for a quick start)
-uv run python demo_run.py
+uv run python demo_run.py   # prints a summary: assets, quality checks, report path
 
 # Or explore the asset graph in the Dagster UI
 uv run python -m dagster dev
@@ -152,7 +158,9 @@ The project follows strict engineering standards:
 # Run formatting, linting, type checking and unit tests
 ./scripts/lint.sh
 ```
-CI runs the same checks on every push: `.github/workflows/ci.yml`.
+CI runs the same checks on every push (`.github/workflows/ci.yml`, job `quality`). The
+`pipeline` job then runs the full pipeline on 5M frames — the KPI table lands in the
+run's *Summary* tab and the SQLite report is attached as the `kpi-report-sqlite` artifact.
 
 ---
 *Created as a demonstration of advanced Data Engineering & MLOps patterns for 2026.*
