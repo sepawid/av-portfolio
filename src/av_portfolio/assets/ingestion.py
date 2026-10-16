@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import polars as pl
 from dagster import AssetExecutionContext, asset
 
@@ -6,14 +8,22 @@ from av_portfolio.utils.paths import RAW_DATA_DIR
 
 RAW_DATA_FILE = RAW_DATA_DIR / "detections.pb"
 
+_DETECTIONS_SCHEMA = pl.Schema(
+    {
+        "frame_id": pl.Int64,
+        "actual_class": pl.Int64,
+        "predicted_class": pl.Int64,
+        "confidence": pl.Float64,
+        "bbox_iou": pl.Float64,
+        "weather": pl.Int64,
+    }
+)
 
-@asset
-def ingest_logs(context: AssetExecutionContext) -> pl.DataFrame:
+
+def load_detections(path: Path) -> pl.DataFrame:
     """Parsuje plik .pb i rzutuje go do polars.DataFrame."""
-    context.log.info(f"Wczytywanie danych z {RAW_DATA_FILE}...")
-
     batch = traffic_signs_pb2.DetectionBatch()  # type: ignore
-    with open(RAW_DATA_FILE, "rb") as f:
+    with open(path, "rb") as f:
         batch.ParseFromString(f.read())
 
     # Wykorzystujemy list comprehension dla szybkości (Polars świetnie radzi sobie z listami)
@@ -32,6 +42,13 @@ def ingest_logs(context: AssetExecutionContext) -> pl.DataFrame:
         for d in batch.detections
     ]
 
-    df = pl.DataFrame(data)
+    return pl.DataFrame(data, schema=_DETECTIONS_SCHEMA)
+
+
+@asset
+def ingest_logs(context: AssetExecutionContext) -> pl.DataFrame:
+    """Wczytuje surowe detekcje z pliku Protobuf."""
+    context.log.info(f"Wczytywanie danych z {RAW_DATA_FILE}...")
+    df = load_detections(RAW_DATA_FILE)
     context.log.info(f"Zaimportowano {len(df)} rekordów.")
     return df

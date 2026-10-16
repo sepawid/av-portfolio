@@ -1,0 +1,57 @@
+# Project Plan — AV Portfolio (TSR KPI Pipeline)
+
+Plan rozwoju projektu i jego aktualny status. Zakres: pipeline ewaluacji modelu percepcji AV (rozpoznawanie znaków drogowych) na syntetycznych danych 5M rekordów.
+
+## Cel projektu
+
+Pokazać produkcyjny wzorzec przetwarzania danych dla wizji komputerowej w AV:
+
+- binarny ingest (Protobuf) → wektoryzacja (Polars lazy) → walidacja (Pandera) → KPI → Parquet → DuckDB → BI (Redash),
+- orkiestracja assetowa (Dagster) z rejestrem lineage,
+- rygorystyczna jakość: mypy strict, ruff, testy, CI.
+
+## Fazy
+
+### Faza 1 — Rdzeń pipeline'u ✅ (zakończona)
+
+- [x] Schemat Protobuf (`traffic_signs.proto`) + generator danych syntetycznych (5M rekordów)
+- [x] Assety Dagstera: `ingest_logs`, `validate_schema`, `evaluate_metrics`, `export_parquet`, `duckdb_bridge`
+- [x] Walidacja schematu (Pandera) i wektoryzowane KPI (Polars)
+- [x] Most DuckDB → SQLite dla Redash
+
+### Faza 2 — Higiena repo i CI ✅ (zakończona)
+
+- [x] `.gitignore` dla danych generowanych, cache'y i artefaktów
+- [x] Instalowalny pakiet (`uv_build`) — koniec z hackami `sys.path`/`src.` importami
+- [x] Zależności runtime vs dev (`dependency-groups`), usunięcie nieużywanych (pandas, pyarrow)
+- [x] CI na GitHub Actions: `ruff format --check`, `ruff check`, `mypy src`, `pytest`
+- [x] Skrypty: `scripts/lint.sh` (+pytest), `scripts/generate_proto.sh`
+
+### Faza 3 — Testy i dokumentacja ✅ (zakończona)
+
+- [x] Refaktor pod testowalność: `load_detections()` i `compute_kpi_flags()` jako czyste funkcje
+- [x] Testy jednostkowe: flagi KPI (tabela przypadków), schemat Pandery, roundtrip Protobuf
+- [x] Dokumentacja: `kpi-definition.md`, `runbook.md`, `project-plan.md` (ten plik)
+
+### Faza 4 — Poprawa semantyki KPI 🔄 (w toku)
+
+Zakres na podstawie listy ograniczeń z `kpi-definition.md`:
+
+- [ ] Spójny próg `confidence` dla TP/FP/FN („efektywna predykcja")
+- [ ] Wyeliminowanie fałszywych TP dla pary NONE/NONE; dodanie flagi `is_true_negative`
+- [ ] Enumy z `.proto` (lub udokumentowany mirror) zamiast magicznych liczb
+- [ ] Rozszerzenie raportu SQLite: `precision`, `recall`, `f1` + wiersz zbiorczy (ALL)
+- [ ] Regeneracja danych wyjściowych i aktualizacja testów
+
+### Faza 5 — Prezentacja i portfolio ⏳ (planowana)
+
+- [ ] Notebook EDA z realną analizą (rozpad fog/rain, krzywa precision/recall vs próg)
+- [ ] Wykresy do README, opis wyników
+- [ ] (Opcjonalnie) porównanie dwóch modeli / symulacja degradacji jakości
+
+## Definition of Done (każda faza)
+
+1. `./scripts/lint.sh` przechodzi bez błędów (ruff, mypy strict, pytest).
+2. Nowe funkcje mają testy jednostkowe.
+3. Dokumentacja w `docs/` odzwierciedla stan kodu.
+4. Historia git: jeden commit na fazę z opisowym message.

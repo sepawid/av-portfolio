@@ -4,22 +4,15 @@ from dagster import AssetExecutionContext, asset
 from av_portfolio.models.schemas import DetectionSchema
 
 
-@asset
-def validate_schema(context: AssetExecutionContext, ingest_logs: pl.DataFrame) -> pl.DataFrame:
-    """Używa Pandery do walidacji schematu danych."""
-    context.log.info("Walidacja schematu za pomocą Pandery...")
-    return DetectionSchema.validate(ingest_logs)
+def compute_kpi_flags(df: pl.DataFrame) -> pl.DataFrame:
+    """Wektoryzowane obliczanie flag KPI (Polars Lazy API).
 
-
-@asset
-def evaluate_metrics(context: AssetExecutionContext, validate_schema: pl.DataFrame) -> pl.DataFrame:
-    """Wektoryzowane obliczanie KPI z użyciem Polars Lazy API."""
-    context.log.info("Obliczanie metryk (Lazy Evaluation)...")
-
+    Zwraca wejściowy DataFrame rozszerzony o kolumny:
+    is_true_positive, is_false_positive, is_false_negative, is_critical_failure.
+    """
     # STOP=1, YIELD=2, NONE=0, SUNNY=0
-
     return (
-        validate_schema.lazy()
+        df.lazy()
         .with_columns(
             [
                 # True Positive (Model trafił idealnie w punkt)
@@ -63,3 +56,17 @@ def evaluate_metrics(context: AssetExecutionContext, validate_schema: pl.DataFra
         )
         .collect()
     )
+
+
+@asset
+def validate_schema(context: AssetExecutionContext, ingest_logs: pl.DataFrame) -> pl.DataFrame:
+    """Używa Pandery do walidacji schematu danych."""
+    context.log.info("Walidacja schematu za pomocą Pandery...")
+    return DetectionSchema.validate(ingest_logs)
+
+
+@asset
+def evaluate_metrics(context: AssetExecutionContext, validate_schema: pl.DataFrame) -> pl.DataFrame:
+    """Oblicza flagi KPI na zwalidowanych danych."""
+    context.log.info("Obliczanie metryk (Lazy Evaluation)...")
+    return compute_kpi_flags(validate_schema)
