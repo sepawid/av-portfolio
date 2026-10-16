@@ -1,4 +1,3 @@
-version: "3.8"
 
 x-redash-env: &redash-env
   PYTHONUNBUFFERED: 1

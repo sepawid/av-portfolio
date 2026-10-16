@@ -65,7 +65,7 @@ instead of a hidden constant.
 ## 🚦 Getting Started
 
 ### 1. Prerequisites
-Ensure you have `uv` and `docker-compose` installed.
+Ensure you have `uv` and Docker (Compose v2) installed.
 
 ### 2. Installation
 ```bash
@@ -89,7 +89,7 @@ Navigate to [http://localhost:3000](http://localhost:3000) to see the Asset Grap
 
 ### 5. Launch Visualization
 ```bash
-docker-compose up -d
+docker compose up -d
 ./scripts/redash_setup.sh   # init DB + register the SQLite data source
 ```
 Access the dashboard at [http://localhost:5000](http://localhost:5000) (create an admin

@@ -5,7 +5,7 @@ Instrukcja operacyjna: jak uruchomić pipeline lokalnie, gdzie szukać wyników 
 ## Wymagania
 
 - [uv](https://docs.astral.sh/uv/) (zarządzanie zależnościami)
-- [Docker + docker-compose](https://docs.docker.com/compose/) (tylko dla warstwy BI/Redash)
+- [Docker + docker compose](https://docs.docker.com/compose/) (tylko dla warstwy BI/Redash)
 - Linux/macOS (na Windowsie użyj WSL2)
 
 ## 1. Setup środowiska
@@ -77,7 +77,7 @@ print(duckdb.sql(\"SELECT * FROM 'data/outputs/redash_db.sqlite'.kpi_report\").d
 ## 5. Warstwa BI (Redash)
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Automatyzacja (zalecane)
@@ -88,15 +88,15 @@ docker-compose up -d
 
 ### Kroki manualne (alternatywa)
 
-1. `docker-compose run --rm server create_db` — jednorazowa inicjalizacja bazy Redasha.
+1. `docker compose run --rm server create_db` — jednorazowa inicjalizacja bazy Redasha.
 2. Otwórz [http://localhost:5000](http://localhost:5000) i utwórz konto admina.
 3. **Settings → Data Sources → New Data Source**:
    - Type: `SQLite`
    - Database Path: `/data/redash_db.sqlite` (katalog `data/outputs` jest zamontowany jako `/data` w kontenerach)
-4. Przykładowe zapytanie:
+4. Przykładowe zapytanie (uwaga: SQLite w kontenerze Redasha jest stary, bez `NULLS LAST`):
 
 ```sql
-SELECT * FROM kpi_report ORDER BY weather NULLS LAST;
+SELECT * FROM kpi_report ORDER BY weather IS NULL, weather;
 ```
 
 Po zmianie danych wystarczy odświeżyć zapytanie — plik SQLite jest nadpisywany przez asset `duckdb_bridge`.
