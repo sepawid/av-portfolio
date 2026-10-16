@@ -46,7 +46,7 @@ Pokazać produkcyjny wzorzec przetwarzania danych dla wizji komputerowej w AV:
 
 - [x] Notebook EDA z realną analizą (recall per klasa × pogoda, sweep progu confidence, critical failures)
 - [x] Wykresy (`docs/figures/`) i sekcja „Key Results" w README
-- [ ] (Opcjonalnie, na przyszłość) porównanie dwóch modeli / symulacja degradacji jakości
+- [x] (zrealizowane) porównanie dwóch profili modelu (A/B): `scripts/compare_models.py` + sekcja 7 w notebooku — v2 podnosi recall 0.816 → 0.974 i ścina critical failures o 77%
 
 ## Definition of Done (każda faza)
 

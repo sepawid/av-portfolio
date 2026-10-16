@@ -68,6 +68,19 @@ The threshold sweep shows the F1-optimal threshold for this synthetic model is *
 (F1 0.970) — making the acceptance threshold an explicit, measurable policy decision
 instead of a hidden constant.
 
+### Model A/B comparison
+
+`scripts/compare_models.py` runs the **identical KPI battery** against two model
+profiles (same deterministic generator, different quality parameters), turning
+model improvements into numbers:
+
+| Model | Precision | Recall | F1 | Critical failures |
+|---|---:|---:|---:|---:|
+| v1 (baseline) | 0.9832 | 0.8163 | 0.8920 | 42,611 |
+| **v2 (improved)** | **0.9929** | **0.9736** | **0.9832** | **9,672 (−77%)** |
+
+![Model v1 vs v2](docs/figures/05_model_comparison.png)
+
 ## 🚦 Getting Started
 
 ### 1. Prerequisites
