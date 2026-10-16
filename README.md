@@ -1,5 +1,6 @@
 # AV Perception KPI Pipeline: Traffic Sign Recognition (TSR)
 
+[![CI](https://github.com/sepawid/av-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/sepawid/av-portfolio/actions/workflows/ci.yml)
 [![Code Style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
 [![Orchestration: Dagster](https://img.shields.io/badge/orchestration-dagster-red.svg)](https://dagster.io/)
