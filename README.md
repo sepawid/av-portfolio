@@ -81,6 +81,22 @@ model improvements into numbers:
 
 ![Model v1 vs v2](docs/figures/05_model_comparison.png)
 
+## ⚡ Performance
+
+Measured on AMD Ryzen AI MAX+ PRO 395, Linux, Python 3.12 (single local run,
+`uv run python scripts/benchmark.py`):
+
+| Step | Time |
+|---|---:|
+| Generator: 5M records → Protobuf | 4.99 s |
+| Ingest: Protobuf → Polars DataFrame (5M) | 3.60 s |
+| KPI flags (`compute_kpi_flags`, 5M rows) | 0.03 s |
+| Pipeline end-to-end (ingest → validation → KPI → Parquet → SQLite) | 6.23 s |
+| Unit tests (pytest, 37 tests) | 0.92 s |
+
+The whole pipeline — 5M frames in, BI-ready SQLite report out — runs in about six
+seconds, single process, no cluster.
+
 ## 🚦 Getting Started
 
 ### 1. Prerequisites
