@@ -81,6 +81,16 @@ model improvements into numbers:
 
 ![Model v1 vs v2](docs/figures/05_model_comparison.png)
 
+## 🖥️ Orchestration & BI in Action
+
+The full stack running locally — Dagster global asset lineage (all assets
+materialized, quality checks green) and the Redash dashboard provisioned
+end-to-end via REST API (`./scripts/redash_provision.sh`):
+
+![Dagster asset lineage — 5 assets, all materialized](docs/figures/dagster_ui.png)
+
+![Redash dashboard provisioned via REST API](docs/figures/redash_dashboard.png)
+
 ## ⚡ Performance
 
 Measured on AMD Ryzen AI MAX+ PRO 395, Linux, Python 3.12 (single local run,
@@ -128,7 +138,7 @@ docker compose up -d
 ./scripts/redash_setup.sh       # init DB + register the SQLite data source
 ./scripts/redash_provision.sh   # service account + saved query + dashboard via API
 ```
-Access the dashboard at [http://localhost:5000/dashboards/av-kpi-overview](http://localhost:5000/dashboards/av-kpi-overview)
+Access the dashboard at [http://localhost:5000/dashboard/av-kpi-overview](http://localhost:5000/dashboard/av-kpi-overview)
 (login `demo@av.local` / `av-demo-2026`, or create your own admin account).
 Details and alternatives: [docs/runbook.md](docs/runbook.md).
 

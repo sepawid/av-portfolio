@@ -96,7 +96,9 @@ stare obiekty):
   Twoje własne konto pozostaje nietknięte),
 - zapisane query **„KPI per weather"** (wyniki wykonane i zacache'owane),
 - wizualizacje (tabela + wykres słupkowy recall) i dashboard **„AV KPI Overview"**:
-  [http://localhost:5000/dashboards/av-kpi-overview](http://localhost:5000/dashboards/av-kpi-overview).
+  [http://localhost:5000/dashboard/av-kpi-overview](http://localhost:5000/dashboard/av-kpi-overview)
+  (link po stabilnym slugu; URL-e z `/dashboards/<id>` też działają, ale ID zmienia się
+  przy ponownym provisioningu).
 
 ### Kroki manualne (alternatywa)
 
