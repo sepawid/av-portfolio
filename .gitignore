@@ -1,0 +1,31 @@
+# Python-generated files
+__pycache__/
+*.py[cod]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Dagster temporary homes
+.tmp_dagster_home_*
+
+# Generated data & artifacts (regenerate with `uv run python generator.py`)
+data/
+*.parquet
+*.pb
+*.sqlite
+*.sqlite3
+
+# OS / editor
+.DS_Store

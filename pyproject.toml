@@ -1,0 +1,53 @@
+[project]
+name = "av-portfolio"
+version = "0.1.0"
+description = "TSR Evaluation Pipeline with Polars and DuckDB"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dagster",
+    "dagster-webserver",
+    "duckdb",
+    "numpy",
+    "pandera",
+    "polars",
+    "protobuf",
+]
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "grpcio-tools",
+    "mypy",
+    "pytest",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["src/av_portfolio/proto/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["av_portfolio"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+exclude = ["src/av_portfolio/proto/.*"]
+
+[[tool.mypy.overrides]]
+module = "dagster.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

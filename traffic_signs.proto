@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package av_portfolio;
+
+enum SignClass {
+    NONE = 0;
+    STOP = 1;
+    YIELD = 2;
+    SPEED_LIMIT = 3;
+    OTHER = 4;
+}
+
+enum Weather {
+    SUNNY = 0;
+    RAIN = 1;
+    FOG = 2;
+}
+
+message SignDetection {
+    int64 frame_id = 1;
+    SignClass actual_class = 2;
+    SignClass predicted_class = 3;
+    float confidence = 4;
+    float bbox_iou = 5;
+    Weather weather = 6;
+}
+
+message DetectionBatch {
+    repeated SignDetection detections = 1;
+}
