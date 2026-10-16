@@ -47,6 +47,8 @@ Pokazać produkcyjny wzorzec przetwarzania danych dla wizji komputerowej w AV:
 - [x] Notebook EDA z realną analizą (recall per klasa × pogoda, sweep progu confidence, critical failures)
 - [x] Wykresy (`docs/figures/`) i sekcja „Key Results" w README
 - [x] (zrealizowane) porównanie dwóch profili modelu (A/B): `scripts/compare_models.py` + sekcja 7 w notebooku — v2 podnosi recall 0.816 → 0.974 i ścina critical failures o 77%
+- [x] (zrealizowane) benchmark wydajności (`scripts/benchmark.py`) + sekcja „Performance" w README (end-to-end ~6 s dla 5M rekordów)
+- [x] (zrealizowane) publikacja na GitHub: https://github.com/sepawid/av-portfolio (CI zielone na każdym pushu)
 
 ## Definition of Done (każda faza)
 
