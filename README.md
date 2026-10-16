@@ -125,10 +125,12 @@ Navigate to [http://localhost:3000](http://localhost:3000) to see the Asset Grap
 ### 5. Launch Visualization
 ```bash
 docker compose up -d
-./scripts/redash_setup.sh   # init DB + register the SQLite data source
+./scripts/redash_setup.sh       # init DB + register the SQLite data source
+./scripts/redash_provision.sh   # service account + saved query + dashboard via API
 ```
-Access the dashboard at [http://localhost:5000](http://localhost:5000) (create an admin
-account on first visit). Details and alternatives: [docs/runbook.md](docs/runbook.md).
+Access the dashboard at [http://localhost:5000/dashboards/av-kpi-overview](http://localhost:5000/dashboards/av-kpi-overview)
+(login `demo@av.local` / `av-demo-2026`, or create your own admin account).
+Details and alternatives: [docs/runbook.md](docs/runbook.md).
 
 ## 🛡️ Quality Assurance
 The project follows strict engineering standards:

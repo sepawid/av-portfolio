@@ -25,7 +25,7 @@ uv run python -c "import av_portfolio; print('OK')"
 Dane surowe to plik Protobuf `data/raw/detections.pb` (5M rekordów, ~92 MB).
 Katalog `data/` jest generowany i **nie jest wersjonowany** w gicie.
 
-Regeneracja danych (trwa kilka minut):
+Regeneracja danych (~5 sekund, deterministyczna — `SEED=42`):
 
 ```bash
 uv run python generator.py
@@ -70,7 +70,9 @@ Szybki podgląd z DuckDB:
 ```bash
 uv run python -c "
 import duckdb
-print(duckdb.sql(\"SELECT * FROM 'data/outputs/redash_db.sqlite'.kpi_report\").df())
+rows = duckdb.sql(\"SELECT * FROM 'data/outputs/redash_db.sqlite'.kpi_report\").fetchall()
+for row in rows:
+    print(row)
 "
 ```
 
@@ -83,8 +85,18 @@ docker compose up -d
 ### Automatyzacja (zalecane)
 
 ```bash
-./scripts/redash_setup.sh   # inicjalizacja bazy + rejestracja datasource SQLite
+./scripts/redash_setup.sh      # inicjalizacja bazy + rejestracja datasource SQLite
+./scripts/redash_provision.sh  # konto serwisowe + zapisane query + dashboard (REST API)
 ```
+
+`redash_provision.sh` tworzy (idempotentnie — przy ponownym uruchomieniu zastępuje
+stare obiekty):
+
+- konto serwisowe **`demo@av.local` / `av-demo-2026`** (admin na tej lokalnej instancji;
+  Twoje własne konto pozostaje nietknięte),
+- zapisane query **„KPI per weather"** (wyniki wykonane i zacache'owane),
+- wizualizacje (tabela + wykres słupkowy recall) i dashboard **„AV KPI Overview"**:
+  [http://localhost:5000/dashboards/av-kpi-overview](http://localhost:5000/dashboards/av-kpi-overview).
 
 ### Kroki manualne (alternatywa)
 
