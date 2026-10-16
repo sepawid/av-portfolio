@@ -42,11 +42,11 @@ Pokazać produkcyjny wzorzec przetwarzania danych dla wizji komputerowej w AV:
 - [x] Generator danych: seed (determinizm) + kalibracja confidence (trafienia pewniejsze niż błędy)
 - [x] Regeneracja danych wyjściowych i aktualizacja testów; automatyzacja setupu Redash (`scripts/redash_setup.sh`)
 
-### Faza 5 — Prezentacja i portfolio ⏳ (planowana)
+### Faza 5 — Prezentacja i portfolio ✅ (zakończona)
 
-- [ ] Notebook EDA z realną analizą (rozpad fog/rain, krzywa precision/recall vs próg)
-- [ ] Wykresy do README, opis wyników
-- [ ] (Opcjonalnie) porównanie dwóch modeli / symulacja degradacji jakości
+- [x] Notebook EDA z realną analizą (recall per klasa × pogoda, sweep progu confidence, critical failures)
+- [x] Wykresy (`docs/figures/`) i sekcja „Key Results" w README
+- [ ] (Opcjonalnie, na przyszłość) porównanie dwóch modeli / symulacja degradacji jakości
 
 ## Definition of Done (każda faza)
 

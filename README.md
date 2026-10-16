@@ -36,6 +36,32 @@ graph LR
 - **Safety-First KPIs**: Specialized logic to detect **Critical Failures** (e.g., missed STOP signs in adverse weather conditions like FOG/RAIN).
 - **OLAP Bridge**: Uses DuckDB to bridge the gap between the Parquet Data Lake and the BI layer, enabling high-speed aggregations without a dedicated database server.
 
+## 📊 Key Results (synthetic benchmark, 5M frames)
+
+Evaluated with the **effective-prediction rule**: a prediction with `confidence < 0.7`
+is treated as no detection. Full analysis with charts: [notebooks/exploration.ipynb](notebooks/exploration.ipynb).
+
+| Segment | Frames | Precision | Recall | F1 | Critical failures |
+|---|---:|---:|---:|---:|---:|
+| **ALL** | 5,000,000 | 0.9832 | 0.8163 | 0.8920 | 42,611 |
+| SUNNY | 3,500,259 | 0.9834 | 0.8229 | 0.8960 | 0 |
+| RAIN | 999,653 | 0.9830 | 0.8230 | 0.8959 | 17,448 |
+| FOG | 500,088 | 0.9820 | 0.7569 | 0.8549 | 25,163 |
+
+**Headline finding:** fog collapses STOP-sign recall to **0.175** (vs ~0.82 in sunny
+weather) while precision stays ~0.98 — exactly the safety-critical failure mode this
+pipeline is built to surface. Every critical failure happens in rain or fog.
+
+![Recall by sign class and weather](docs/figures/01_recall_by_class_weather.png)
+
+![Precision-recall sweep vs confidence threshold](docs/figures/02_precision_recall_sweep.png)
+
+![Critical failures by weather](docs/figures/03_critical_failures.png)
+
+The threshold sweep shows the F1-optimal threshold for this synthetic model is **0.60**
+(F1 0.970) — making the acceptance threshold an explicit, measurable policy decision
+instead of a hidden constant.
+
 ## 🚦 Getting Started
 
 ### 1. Prerequisites
@@ -48,28 +74,34 @@ uv sync
 
 ### 3. Generate Mock Data (5M Records)
 ```bash
-uv run python3 generator.py
+uv run python generator.py
 ```
 
 ### 4. Run the Pipeline
 ```bash
-# Start the Dagster Dev Server
-uv run python3 -m dagster dev
+# One-shot headless run (recommended for a quick start)
+uv run python demo_run.py
+
+# Or explore the asset graph in the Dagster UI
+uv run python -m dagster dev
 ```
 Navigate to [http://localhost:3000](http://localhost:3000) to see the Asset Graph.
 
 ### 5. Launch Visualization
 ```bash
 docker-compose up -d
+./scripts/redash_setup.sh   # init DB + register the SQLite data source
 ```
-Access the dashboard at [http://localhost:5000](http://localhost:5000).
+Access the dashboard at [http://localhost:5000](http://localhost:5000) (create an admin
+account on first visit). Details and alternatives: [docs/runbook.md](docs/runbook.md).
 
 ## 🛡️ Quality Assurance
 The project follows strict engineering standards:
 ```bash
-# Run formatting, linting, and type checking
+# Run formatting, linting, type checking and unit tests
 ./scripts/lint.sh
 ```
+CI runs the same checks on every push: `.github/workflows/ci.yml`.
 
 ---
 *Created as a demonstration of advanced Data Engineering & MLOps patterns for 2026.*
