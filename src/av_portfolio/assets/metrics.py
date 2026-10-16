@@ -7,6 +7,9 @@ from av_portfolio.models.schemas import DetectionSchema
 CONFIDENCE_THRESHOLD = 0.7
 """Predykcje z confidence poniżej progu są traktowane jak brak detekcji (NONE)."""
 
+LOCALIZATION_IOU_THRESHOLD = 0.7
+"""Trafienia klasowe z IoU bounding boxa poniżej progu = poor localization."""
+
 _CRITICAL_CLASSES = [SignClass.STOP.value, SignClass.YIELD.value]
 
 
@@ -23,6 +26,7 @@ def compute_kpi_flags(df: pl.DataFrame) -> pl.DataFrame:
     - is_false_positive:  effective to inny znak niż actual (w tym phantom detection)
     - is_false_negative:  actual to znak, ale effective go nie potwierdza
     - is_critical_failure: przeoczony STOP/YIELD (FN) w złej pogodzie
+    - is_poor_localization: trafienie klasowe (TP) z bbox_iou < LOCALIZATION_IOU_THRESHOLD
 
     Błędna klasyfikacja znaku zapala jednocześnie FP i FN (konwencja flagowa).
     """
@@ -78,6 +82,16 @@ def compute_kpi_flags(df: pl.DataFrame) -> pl.DataFrame:
                     .then(1)
                     .otherwise(0)
                 ).alias("is_critical_failure"),
+                # Poor localization (klasa trafiona, ale box niedokładny)
+                (
+                    pl.when(
+                        (pl.col("effective_prediction") == pl.col("actual_class"))
+                        & (pl.col("actual_class") != SignClass.NONE)
+                        & (pl.col("bbox_iou") < LOCALIZATION_IOU_THRESHOLD)
+                    )
+                    .then(1)
+                    .otherwise(0)
+                ).alias("is_poor_localization"),
             ]
         )
         .drop("effective_prediction")

@@ -41,22 +41,28 @@ graph LR
 Evaluated with the **effective-prediction rule**: a prediction with `confidence < 0.7`
 is treated as no detection. Full analysis with charts: [notebooks/exploration.ipynb](notebooks/exploration.ipynb).
 
-| Segment | Frames | Precision | Recall | F1 | Critical failures |
-|---|---:|---:|---:|---:|---:|
-| **ALL** | 5,000,000 | 0.9832 | 0.8163 | 0.8920 | 42,611 |
-| SUNNY | 3,500,259 | 0.9834 | 0.8229 | 0.8960 | 0 |
-| RAIN | 999,653 | 0.9830 | 0.8230 | 0.8959 | 17,448 |
-| FOG | 500,088 | 0.9820 | 0.7569 | 0.8549 | 25,163 |
+| Segment | Frames | Precision | Recall | F1 | Avg IoU (TP) | Critical failures |
+|---|---:|---:|---:|---:|---:|---:|
+| **ALL** | 5,000,000 | 0.9832 | 0.8163 | 0.8920 | 0.8249 | 42,611 |
+| SUNNY | 3,500,259 | 0.9834 | 0.8229 | 0.8960 | 0.8249 | 0 |
+| RAIN | 999,653 | 0.9830 | 0.8230 | 0.8959 | 0.8249 | 17,448 |
+| FOG | 500,088 | 0.9820 | 0.7569 | 0.8549 | 0.8251 | 25,163 |
 
 **Headline finding:** fog collapses STOP-sign recall to **0.175** (vs ~0.82 in sunny
 weather) while precision stays ~0.98 — exactly the safety-critical failure mode this
 pipeline is built to surface. Every critical failure happens in rain or fog.
+
+**Localization:** matched detections average IoU **0.825**; ~12% of matches fall below
+the 0.70 IoU threshold (`is_poor_localization` — box quality is a first-class KPI,
+independent of weather in this benchmark).
 
 ![Recall by sign class and weather](docs/figures/01_recall_by_class_weather.png)
 
 ![Precision-recall sweep vs confidence threshold](docs/figures/02_precision_recall_sweep.png)
 
 ![Critical failures by weather](docs/figures/03_critical_failures.png)
+
+![Localization quality: matched detections vs false positives](docs/figures/04_localization_quality.png)
 
 The threshold sweep shows the F1-optimal threshold for this synthetic model is **0.60**
 (F1 0.970) — making the acceptance threshold an explicit, measurable policy decision

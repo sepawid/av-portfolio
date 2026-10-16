@@ -80,6 +80,16 @@ actual IN {STOP, YIELD} AND effective != actual AND weather != SUNNY
 
 Najgroźniejsza klasa błędu: efektywne przeoczenie STOP/YIELD w deszczu lub mgle.
 
+### is_poor_localization
+
+```
+actual != NONE AND effective == actual AND bbox_iou < 0.7
+```
+
+Trafienie klasowe (TP), ale z niedokładnie zlokalizowanym boxem — IoU poniżej
+`LOCALIZATION_IOU_THRESHOLD` (domyślnie `0.7`, ostre `<`). Mierzy jakość
+lokalizacji, a nie tylko poprawność klasy.
+
 ### Uwagi projektowe
 
 - Błędna klasyfikacja znaku (`actual` i `effective` to różne klasy nie-NONE) zapala **jednocześnie FP i FN** — świadoma konwencja prostego modelu flagowego (nie jest to macierz pomyłek).
@@ -96,6 +106,8 @@ Najgroźniejsza klasa błędu: efektywne przeoczenie STOP/YIELD w deszczu lub mg
 | `total_frames` | liczba klatek w segmencie |
 | `tp`, `tn`, `fp`, `fn` | sumy flag |
 | `critical_failures` | suma `is_critical_failure` |
+| `poor_localizations` | suma `is_poor_localization` |
+| `avg_iou_tp` | średni IoU boxa na trafieniach (TP) |
 | `precision` | `tp / (tp + fp)` (NULL-safe) |
 | `recall` | `tp / (tp + fn)` (NULL-safe) |
 | `f1` | `2*tp / (2*tp + fp + fn)` (NULL-safe) |

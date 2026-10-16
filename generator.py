@@ -15,7 +15,8 @@ def generate_mock_data(n: int = 5_000_000, output_path: Path | None = None) -> N
     przeoczenie STOP we mgle (80% szans) oraz 5% losowych pomyłek.
     Profil confidence jest skalibrowany: poprawne predykcje mają wyższą pewność
     (0.65-1.0), a błędne niższą (0.3-0.8) — dzięki temu próg decyzyjny modelu
-    (CONFIDENCE_THRESHOLD) działa realistycznie.
+    (CONFIDENCE_THRESHOLD) działa realistycznie. Podobnie IoU bounding boxa:
+    trafienia są lepiej zlokalizowane (0.66-0.99) niż pomyłki (0.4-0.8).
     """
     if output_path is None:
         output_path = RAW_DATA_DIR / "detections.pb"
@@ -53,7 +54,12 @@ def generate_mock_data(n: int = 5_000_000, output_path: Path | None = None) -> N
         rng.uniform(0.3, 0.8, n),
         rng.uniform(0.65, 1.0, n),
     )
-    bbox_ious = rng.uniform(0.5, 0.99, n)
+    # Kalibracja lokalizacji: trafione detekcje mają wyższy IoU niż pomyłki
+    bbox_ious = np.where(
+        is_error,
+        rng.uniform(0.4, 0.8, n),
+        rng.uniform(0.66, 0.99, n),
+    )
 
     # 2. Budowanie paczki Protobuf
     batch = traffic_signs_pb2.DetectionBatch()  # type: ignore

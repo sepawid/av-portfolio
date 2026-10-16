@@ -25,7 +25,7 @@ Wszystkie procesy przetwarzania znajdują się w katalogu `src/av_portfolio/asse
 *   **Walidacja (Pandera)**: [metrics.py](file:///home/sebastian/repos/automotive_kpis/av-portfolio/src/av_portfolio/assets/metrics.py) oraz [schemas.py](file:///home/sebastian/repos/automotive_kpis/av-portfolio/src/av_portfolio/models/schemas.py)
     *   *Kluczowy proces:* Asset `validate_schema`. Wymusza rygorystyczne typowanie przed obliczeniami.
 *   **Obliczenia KPI (Polars Lazy)**: [metrics.py](file:///home/sebastian/repos/automotive_kpis/av-portfolio/src/av_portfolio/assets/metrics.py)
-    *   *Kluczowy proces:* Asset `evaluate_metrics`. Tutaj znajduje się wektorowa logika `pl.when().then()` wyliczająca TP/FP/FN oraz Critical Failures.
+    *   *Kluczowy proces:* Asset `evaluate_metrics`. Tutaj znajduje się wektorowa logika `pl.when().then()` wyliczająca TP/TN/FP/FN, Critical Failures oraz poor localization (jakość boxów).
 *   **Export do Data Lake**: [reporting.py](file:///home/sebastian/repos/automotive_kpis/av-portfolio/src/av_portfolio/assets/reporting.py)
     *   *Kluczowy proces:* Asset `export_parquet`. Zapisuje wyniki do `data/processed/results.parquet`.
 

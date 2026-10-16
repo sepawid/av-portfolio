@@ -49,6 +49,8 @@ def duckdb_bridge(context: AssetExecutionContext, export_parquet: str) -> None:
             SUM(is_false_positive) AS fp,
             SUM(is_false_negative) AS fn,
             SUM(is_critical_failure) AS critical_failures,
+            SUM(is_poor_localization) AS poor_localizations,
+            ROUND(AVG(CASE WHEN is_true_positive = 1 THEN bbox_iou END), 4) AS avg_iou_tp,
             ROUND(
                 SUM(is_true_positive) / NULLIF(SUM(is_true_positive) + SUM(is_false_positive), 0),
                 4

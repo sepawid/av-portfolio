@@ -10,6 +10,7 @@ def _flags(**overrides: object) -> pl.DataFrame:
         "is_false_positive": [0, 0],
         "is_false_negative": [1, 0],
         "is_critical_failure": [0, 0],
+        "is_poor_localization": [0, 0],
     }
     base.update(overrides)
     return pl.DataFrame(base)

@@ -9,6 +9,7 @@ FLAG_COLUMNS = [
     "is_false_positive",
     "is_false_negative",
     "is_critical_failure",
+    "is_poor_localization",
 ]
 
 MIN_EXPECTED_ROWS = 4_900_000
