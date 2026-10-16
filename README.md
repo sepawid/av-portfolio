@@ -1,11 +1,14 @@
 # AV Perception KPI Pipeline: Traffic Sign Recognition (TSR)
 
 [![CI](https://github.com/sepawid/av-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/sepawid/av-portfolio/actions/workflows/ci.yml)
+[![Report](https://img.shields.io/badge/report-GitHub%20Pages-2ea44f)](https://sepawid.github.io/av-portfolio/)
 [![Code Style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
 [![Orchestration: Dagster](https://img.shields.io/badge/orchestration-dagster-red.svg)](https://dagster.io/)
 
 A high-performance, asset-driven data pipeline designed for evaluating **Autonomous Vehicle (AV) Vision Models**. This project demonstrates a **Modern Data Stack (2026)** approach to processing and analyzing large-scale perception logs (5M+ records) with extreme efficiency.
+
+📊 **[Live report](https://sepawid.github.io/av-portfolio/)** (GitHub Pages) — headline KPIs, analysis figures and the full notebook as HTML.
 
 ## 🚀 The Architecture
 

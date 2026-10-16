@@ -27,5 +27,8 @@ data/
 *.sqlite
 *.sqlite3
 
+# GitHub Pages build output (regenerate with `./scripts/build_site.sh`)
+/site/
+
 # OS / editor
 .DS_Store

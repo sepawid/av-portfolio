@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AV Perception KPI Pipeline — TSR Evaluation Report</title>
+  <style>
+    :root {
+      --ink: #16213a;
+      --muted: #5b6b8c;
+      --line: #dbe3f0;
+      --panel: #ffffff;
+      --bg: #f4f7fc;
+      --accent: #0b62d6;
+      --danger: #c2410c;
+      --good: #047857;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    .wrap { max-width: 1060px; margin: 0 auto; padding: 0 22px; }
+    header {
+      background: linear-gradient(135deg, #0b1220 0%, #14315f 100%);
+      color: #fff;
+      padding: 52px 0 42px;
+    }
+    header h1 { margin: 0 0 10px; font-size: 32px; letter-spacing: .2px; }
+    header p.sub { margin: 0 0 24px; color: #b9c8e8; max-width: 780px; }
+    .btn {
+      display: inline-block; margin: 0 10px 10px 0; padding: 9px 16px;
+      border-radius: 9px; text-decoration: none; font-weight: 600; font-size: 14px;
+      background: #2563eb; color: #fff;
+    }
+    .btn.ghost { background: transparent; border: 1px solid #5f7db8; color: #dbe6ff; }
+    h2 { font-size: 21px; margin: 40px 0 14px; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-top: 26px; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      padding: 16px 16px 14px;
+    }
+    .card .v { font-size: 27px; font-weight: 700; }
+    .card .v.danger { color: var(--danger); }
+    .card .v.good { color: var(--good); }
+    .card .k { font-weight: 600; margin-top: 2px; }
+    .card .d { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .chips { margin: 6px 0 0; padding: 0; list-style: none; }
+    .chips li {
+      display: inline-block; background: #e8eefb; color: #24406f; border-radius: 999px;
+      padding: 4px 12px; font-size: 13px; margin: 0 8px 8px 0; font-weight: 600;
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+    figure {
+      margin: 0; background: var(--panel); border: 1px solid var(--line);
+      border-radius: 12px; padding: 12px;
+    }
+    figure img { width: 100%; height: auto; display: block; border-radius: 6px; }
+    figure figcaption { color: var(--muted); font-size: 13px; margin-top: 8px; }
+    figure.wide { grid-column: 1 / -1; }
+    section p { margin: 8px 0; }
+    a { color: var(--accent); }
+    footer {
+      margin-top: 44px; padding: 22px 0 30px; border-top: 1px solid var(--line);
+      color: var(--muted); font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>AV Perception KPI Pipeline — TSR Evaluation Report</h1>
+      <p class="sub">
+        Traffic Sign Recognition evaluation on 5,000,000 synthetic frames (~92 MB Protobuf),
+        processed end-to-end in ~6 seconds with Dagster, Polars, Pandera, DuckDB and Redash.
+        Fully deterministic (<code>SEED=42</code>) — every number below is reproducible.
+      </p>
+      <div>
+        <a class="btn" href="notebook.html">📓 Full analysis notebook</a>
+        <a class="btn ghost" href="https://github.com/sepawid/av-portfolio">GitHub repository</a>
+        <a class="btn ghost" href="https://github.com/sepawid/av-portfolio/releases/tag/v1.0.0">Release v1.0.0</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2>Headline KPIs — baseline model (v1)</h2>
+    <section class="kpis">
+      <div class="card"><div class="v">0.983</div><div class="k">Precision</div><div class="d">5M frames, effective predictions</div></div>
+      <div class="card"><div class="v">0.816</div><div class="k">Recall</div><div class="d">deliberately conservative</div></div>
+      <div class="card"><div class="v">0.892</div><div class="k">F1</div><div class="d">precision/recall balance</div></div>
+      <div class="card"><div class="v danger">42,611</div><div class="k">Critical failures</div><div class="d">missed STOP/YIELD — all in rain/fog</div></div>
+      <div class="card"><div class="v">0.825</div><div class="k">Avg IoU (TP)</div><div class="d">box quality on matched detections</div></div>
+      <div class="card"><div class="v good">−77%</div><div class="k">Critical failures</div><div class="d">v2 vs v1, same KPI battery</div></div>
+    </section>
+
+    <h2>What this is</h2>
+    <section>
+      <p>
+        An asset-driven data pipeline that evaluates an autonomous-vehicle perception model:
+        raw detection logs → schema validation → KPI flags (TP/TN/FP/FN, critical failures,
+        localization quality) → Parquet artifacts + a BI report consumed by Redash.
+        Quality is enforced with Dagster asset checks and Pandera; the whole pipeline is
+        covered by unit tests and CI.
+      </p>
+      <ul class="chips">
+        <li>Dagster</li><li>Polars</li><li>Pandera</li><li>Protobuf</li>
+        <li>DuckDB</li><li>Apache Parquet</li><li>Redash</li><li>GitHub Actions</li>
+      </ul>
+    </section>
+
+    <h2>Analysis</h2>
+    <section class="grid">
+      <figure>
+        <img src="figures/01_recall_by_class_weather.png" alt="Recall by sign class and weather">
+        <figcaption>Recall by sign class and weather — fog collapses STOP recall to 0.175 vs ~0.82 in sunny weather.</figcaption>
+      </figure>
+      <figure>
+        <img src="figures/03_critical_failures.png" alt="Critical failures by weather">
+        <figcaption>Critical failures (missed STOP/YIELD) — every single one happens in rain or fog.</figcaption>
+      </figure>
+      <figure>
+        <img src="figures/06_confusion_matrix.png" alt="Confusion matrix">
+        <figcaption>Confusion matrix — errors are misses (444k sign→NONE), not misclassifications (14.9k sign→sign, &lt;0.6%).</figcaption>
+      </figure>
+      <figure>
+        <img src="figures/05_model_comparison.png" alt="Model v1 vs v2">
+        <figcaption>A/B: the improved v2 profile lifts recall 0.816 → 0.974 and cuts critical failures by 77%.</figcaption>
+      </figure>
+    </section>
+
+    <h2>The stack, running</h2>
+    <section class="grid">
+      <figure class="wide">
+        <img src="figures/dagster_ui.png" alt="Dagster asset lineage">
+        <figcaption>Dagster asset lineage — five assets, all materialized, quality checks green.</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="figures/redash_dashboard.png" alt="Redash dashboard">
+        <figcaption>Redash dashboard provisioned end-to-end via REST API (<code>scripts/redash_provision.sh</code>).</figcaption>
+      </figure>
+    </section>
+
+    <h2>Go deeper</h2>
+    <section>
+      <p>
+        📓 <a href="notebook.html">Full analysis notebook</a> — 9 sections, confusion matrix,
+        threshold sweep, localization quality, model A/B.
+        📖 <a href="https://github.com/sepawid/av-portfolio/blob/master/docs/kpi-definition.md">KPI definitions</a> ·
+        <a href="https://github.com/sepawid/av-portfolio/blob/master/docs/runbook.md">Runbook</a> ·
+        <a href="https://github.com/sepawid/av-portfolio">Source code</a>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      AV Perception KPI Pipeline · MIT License © 2026 Sebastian (sepawid) ·
+      Generated from <code>notebooks/exploration.ipynb</code> and <code>docs/figures/</code>.
+    </div>
+  </footer>
+</body>
+</html>
