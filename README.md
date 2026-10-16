@@ -162,5 +162,9 @@ CI runs the same checks on every push (`.github/workflows/ci.yml`, job `quality`
 `pipeline` job then runs the full pipeline on 5M frames — the KPI table lands in the
 run's *Summary* tab and the SQLite report is attached as the `kpi-report-sqlite` artifact.
 
+A Dagster sensor (`quality_gate_alert_sensor`) raises an operator alert whenever a run
+finishes with failed quality checks — logged as `ERROR` and webhook-ready via
+`AV_ALERT_WEBHOOK_URL` (details: [docs/runbook.md](docs/runbook.md#8-alerty-dagster-sensor)).
+
 ---
 *Created as a demonstration of advanced Data Engineering & MLOps patterns for 2026.*

@@ -133,3 +133,44 @@ Konfiguracja CI: `.github/workflows/ci.yml` (te same kroki na GitHub Actions).
 | `SchemaError` z Pandery przy `validate_schema` | dane niezgodne ze `DetectionSchema` | sprawdź, czy `.pb` pochodzi z aktualnego `generator.py` / `.proto` |
 | Redash nie widzi bazy | brak `create_db` lub błędna ścieżka datasource | wykonaj krok 5; ścieżka musi być `/data/redash_db.sqlite` |
 | `av_portfolio` nie importuje się | brak `uv sync` | `uv sync` |
+
+## 8. Alerty (Dagster sensor)
+
+Run, który zakończy się z nieudanym asset checkiem (np. przekroczony budżet
+`critical_failures < 5%` lub za mały dataset), jest wyłapywany przez sensor
+`quality_gate_alert_sensor` (run status sensor, domyślnie **włączony** —
+zakładka *Automation* w UI, patrz `docs/figures/dagster_sensor.png`).
+
+Alert trafia:
+
+1. do logu daemona jako `ERROR` (i do historii ticków sensora w UI),
+2. opcjonalnie do webhooka — ustaw `AV_ALERT_WEBHOOK_URL` (POST JSON
+   `{"text": ...}`, zgodny ze Slackiem; best-effort, timeout 5 s).
+
+Przykład (run z uciętym datasetem, `n=200_000`):
+
+```text
+🚨 AV KPI quality gate failed in run a919b1d1 (1 check(s)):
+  • check_dataset_size
+See docs/runbook.md -> Alerting.
+```
+
+Uwagi:
+
+- sensor działa na wspólnej instancji (`dagster dev`, `dagster asset
+  materialize`); runy in-process (`demo_run.py`) są efemeryczne i nie generują
+  alertów,
+- `monitor_all_code_locations=True` — runy odpalane z CLI nie mają
+  `remote_job_origin`, więc domyślny matching per-lokalizacja by je pomijał.
+
+Szybki test end-to-end:
+
+```bash
+# 1. mały dataset -> check_dataset_size padnie
+uv run python -c "from generator import generate_mock_data; generate_mock_data(n=200_000)"
+# 2. run na wspólnej instancji (wymaga uruchomionego `dagster dev` z tym samym DAGSTER_HOME)
+DAGSTER_HOME=.tmp_dagster_home uv run python -m dagster asset materialize --select "*" -m av_portfolio.definitions
+# 3. w logu daemona po ~30-60 s pojawi się alert ERROR (🚨 ...)
+# 4. przywróć pełne dane
+uv run python generator.py
+```
