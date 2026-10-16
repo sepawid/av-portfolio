@@ -33,6 +33,9 @@ def duckdb_bridge(context: AssetExecutionContext, export_parquet: str) -> None:
     conn.execute("INSTALL sqlite; LOAD sqlite;")
 
     # Agregacja per pogoda + wiersz zbiorczy; wartości NULL-safe (NULLIF).
+    # Uwaga: CAST(SUM(...) AS BIGINT) jest konieczny — DuckDB zwraca HUGEINT,
+    # który przy eksporcie do SQLite mapuje się na TEXT (Redash sortowałby
+    # liczby leksykograficznie, a wykresy w notebooku dostawały stringi).
     agg_query = f"""
         SELECT
             CASE
@@ -44,12 +47,12 @@ def duckdb_bridge(context: AssetExecutionContext, export_parquet: str) -> None:
             END AS weather_label,
             weather,
             COUNT(*) AS total_frames,
-            SUM(is_true_positive) AS tp,
-            SUM(is_true_negative) AS tn,
-            SUM(is_false_positive) AS fp,
-            SUM(is_false_negative) AS fn,
-            SUM(is_critical_failure) AS critical_failures,
-            SUM(is_poor_localization) AS poor_localizations,
+            CAST(SUM(is_true_positive) AS BIGINT) AS tp,
+            CAST(SUM(is_true_negative) AS BIGINT) AS tn,
+            CAST(SUM(is_false_positive) AS BIGINT) AS fp,
+            CAST(SUM(is_false_negative) AS BIGINT) AS fn,
+            CAST(SUM(is_critical_failure) AS BIGINT) AS critical_failures,
+            CAST(SUM(is_poor_localization) AS BIGINT) AS poor_localizations,
             ROUND(AVG(CASE WHEN is_true_positive = 1 THEN bbox_iou END), 4) AS avg_iou_tp,
             ROUND(
                 SUM(is_true_positive) / NULLIF(SUM(is_true_positive) + SUM(is_false_positive), 0),
